@@ -1,0 +1,38 @@
+target Cpp;
+
+reactor task7{
+
+    public preamble {=
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <climits>
+        #include <fstream>
+        #include <sys/stat.h>
+        #include "utils.h"
+    =}
+
+    input in: void;
+    /*output num_processed: int;
+    output num_missed: int;*/
+
+    state elapsed_time:time(0 sec);
+    state processed_users: int(0);
+    state missed_deadlines: int(0);
+
+    reaction(in) {=
+        auto end_time = get_elapsed_physical_time();
+        processed_users++;
+        elapsed_time = end_time;
+
+        wait(500);
+    =}
+
+    reaction(shutdown) {=
+        std::ofstream fp;
+        int index = std::hash<std::thread::id>{}(std::this_thread::get_id());
+        std::string name = "output" + std::to_string(index) + ".csv";
+
+        fp.open(name.c_str(), std::ios_base::app);
+        fp << missed_deadlines << "," << processed_users << "," << elapsed_time.count() << std::endl;
+    =}
+}

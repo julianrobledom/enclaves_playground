@@ -1,0 +1,98 @@
+target Cpp
+{
+    //compiler: gcc,
+    //build-type: Debug,
+    //export-dependency-graph: true,
+    cmake-include: pipeline.cmake,
+    build-type: Release,
+    timeout: 12 s,
+}
+
+import dispatch_manager from "dispatcher.lf"
+import task0 from "task0.lf";
+import task1 from "task1.lf";
+import task2 from "task2.lf";
+import task7 from "task7.lf";
+
+public preamble {=
+    #include <stdlib.h>
+    #include <stdio.h>
+=}
+
+main reactor {
+
+    reaction(startup) {=
+        std::cout << "init pipeline!\n";
+    =}
+
+    dispatch_generator = new dispatch_manager(
+        num_user_threads = 5,
+        num_requests = 5
+    );
+
+    // ---------------------------------------------
+    // user 1
+    user1_task0 = new task0();
+    user1_task1 = new task1();
+    user1_task2 = new task2();
+    user1_task7 = new task7();
+
+    // ---------------------------------------------
+    // user 2
+    /*user2_task0 = new task0();
+    user2_task1 = new task1();
+    user2_task2 = new task2();
+    user2_task7 = new task7();
+
+    // ---------------------------------------------
+    // user 3
+    user3_task0 = new task0();
+    user3_task1 = new task1();
+    user3_task2 = new task2();
+    user3_task7 = new task7();
+
+    // ---------------------------------------------
+    // user 4
+    user4_task0 = new task0();
+    user4_task1 = new task1();
+    user4_task2 = new task2();
+    user4_task7 = new task7();
+
+    // ---------------------------------------------
+    // user 5
+    user5_task0 = new task0();
+    user5_task1 = new task1();
+    user5_task2 = new task2();
+    user5_task7 = new task7();*/
+
+    // ---------------------------------------------
+    dispatch_generator.send_user1 -> user1_task0.in;
+    user1_task0.out -> user1_task1.in;
+    user1_task1.out -> user1_task2.in;
+    user1_task2.out -> user1_task7.in;
+
+    // ---------------------------------------------
+    /*dispatch_generator.send_user2 -> user2_task0.in;
+    user2_task0.out -> user2_task1.in;
+    user2_task1.out -> user2_task2.in;
+    user2_task2.out -> user2_task7.in;
+
+    // ---------------------------------------------
+    dispatch_generator.send_user3 -> user3_task0.in;
+    user3_task0.out -> user3_task1.in;
+    user3_task1.out -> user3_task2.in;
+    user3_task2.out -> user3_task7.in;
+
+    // ---------------------------------------------
+    dispatch_generator.send_user4 -> user4_task0.in;
+    user4_task0.out -> user4_task1.in;
+    user4_task1.out -> user4_task2.in;
+    user4_task2.out -> user4_task7.in;
+
+    // ---------------------------------------------
+    dispatch_generator.send_user5 -> user5_task0.in;
+    user5_task0.out -> user5_task1.in;
+    user5_task1.out -> user5_task2.in;
+    user5_task2.out -> user5_task7.in;*/
+
+}

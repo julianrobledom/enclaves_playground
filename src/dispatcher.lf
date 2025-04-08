@@ -1,0 +1,83 @@
+target Cpp;
+
+reactor dispatch_manager(
+    num_user_threads:int(5),
+    subframe_time:time(1 msec),
+    num_requests: int(5)
+) {
+    public preamble {=
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include <fstream>
+        #include <cstdio>
+        #include <time.h>
+    =}
+
+    output send_user1: void;
+    output send_user2: void;
+    output send_user3: void;
+    output send_user4: void;
+    output send_user5: void;
+
+    state init_time:time(1 sec);
+    state num_users: int(0);
+    state random: int(12);
+
+    logical action new_subframe;
+    logical action warmup_time;
+    logical action send_users_to_threads;
+
+    reaction(startup) -> warmup_time {=
+        warmup_time.schedule(1s);
+    =}
+
+    reaction(warmup_time) -> new_subframe {=
+        auto physical_time = get_elapsed_physical_time();
+        std::cout << "startup time: " << physical_time << std::endl;
+        init_time = physical_time;
+        new_subframe.schedule();
+    =}
+
+    reaction(new_subframe) -> send_users_to_threads {=
+        //srand( (unsigned)time(NULL) );
+        //random = rand() % 10 + 1;
+        random = num_requests;
+        if (random > 0) {
+            send_users_to_threads.schedule();
+            //new_subframe.schedule(subframe_time);
+            num_users = 0;
+        }
+    =}
+
+    reaction(send_users_to_threads) -> send_user1,
+        send_user2,
+        send_user3,
+        send_user4,
+        send_user5,
+        send_users_to_threads
+    {=
+        /* handle_user */
+        for(int i=0; i<num_user_threads; i++){
+            if (random > 0) {
+                random--;
+
+                // interleave users;
+                if(num_users % num_user_threads == 0){send_user1.set();}
+                else if(num_users % num_user_threads == 1){send_user2.set();}
+                else if(num_users % num_user_threads == 2){send_user3.set();}
+                else if(num_users % num_user_threads == 3){send_user4.set();}
+                else if(num_users % num_user_threads == 4){send_user5.set();}
+                num_users++;
+            }
+        }
+        if (random > 0) {
+            send_users_to_threads.schedule(1ns);
+	    }
+    =}
+
+    reaction(shutdown) {=
+        std::ofstream fp;
+        fp.open("trace_manager.csv", std::ios_base::out); // overwrite
+        fp << num_users << "," << init_time.count() << "," << "lf" << std::endl;
+    =}
+}

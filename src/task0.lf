@@ -1,0 +1,18 @@
+target Cpp;
+
+reactor task0 {
+
+    public preamble {=
+        #include <stdlib.h>
+        #include <stdio.h>
+        #include "utils.h"
+    =}
+
+    input in: void;
+    output out: void;
+
+    reaction(in) -> out {=
+        wait(500);
+        out.set();
+    =}
+}

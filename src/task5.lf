@@ -1,0 +1,17 @@
+target Cpp;
+
+reactor task5 {
+
+    public preamble {=
+        #include <stdlib.h>
+        #include <stdio.h>
+    =}
+
+    input in: void;
+    output out: void;
+
+    reaction(in) -> out {=
+        out.set();
+    =}
+
+}
