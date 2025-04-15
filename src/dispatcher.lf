@@ -3,7 +3,8 @@ target Cpp;
 reactor dispatch_manager(
     num_user_threads:int(5),
     subframe_time:time(1 msec),
-    num_requests: int(5)
+    num_requests: int(5),
+    tracefile:std::string("utils/traces.csv")
 ) {
     public preamble {=
         #include <stdlib.h>
@@ -11,13 +12,20 @@ reactor dispatch_manager(
         #include <fstream>
         #include <cstdio>
         #include <time.h>
+        #include "utils.h"
+    =}
+    private preamble {=
+        //static int subframe = 0;
+        current_line cline;
+        FILE* trc;
+        int **params;
     =}
 
-    output send_user1: void;
-    output send_user2: void;
-    output send_user3: void;
-    output send_user4: void;
-    output send_user5: void;
+    output send_user1: arr_t;
+    output send_user2: arr_t;
+    output send_user3: arr_t;
+    output send_user4: arr_t;
+    output send_user5: arr_t;
 
     state init_time:time(1 sec);
     state num_users: int(0);
@@ -28,6 +36,7 @@ reactor dispatch_manager(
     logical action send_users_to_threads;
 
     reaction(startup) -> warmup_time {=
+        init_trace_file(tracefile.c_str(), &cline, &trc);
         warmup_time.schedule(1s);
     =}
 
@@ -39,8 +48,7 @@ reactor dispatch_manager(
     =}
 
     reaction(new_subframe) -> send_users_to_threads {=
-        //srand( (unsigned)time(NULL) );
-        //random = rand() % 10 + 1;
+        params = (parameters(&cline, &trc));
         random = num_requests;
         if (random > 0) {
             send_users_to_threads.schedule();
@@ -62,11 +70,11 @@ reactor dispatch_manager(
                 random--;
 
                 // interleave users;
-                if(num_users % num_user_threads == 0){send_user1.set();}
-                else if(num_users % num_user_threads == 1){send_user2.set();}
-                else if(num_users % num_user_threads == 2){send_user3.set();}
-                else if(num_users % num_user_threads == 3){send_user4.set();}
-                else if(num_users % num_user_threads == 4){send_user5.set();}
+                if(num_users % num_user_threads == 0){send_user1.set((arr_t) &(params[i][0]));}
+                else if(num_users % num_user_threads == 1){send_user2.set((arr_t) &(params[i][0]));}
+                else if(num_users % num_user_threads == 2){send_user3.set((arr_t) &(params[i][0]));}
+                else if(num_users % num_user_threads == 3){send_user4.set((arr_t) &(params[i][0]));}
+                else if(num_users % num_user_threads == 4){send_user5.set((arr_t) &(params[i][0]));}
                 num_users++;
             }
         }

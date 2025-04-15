@@ -11,7 +11,7 @@ reactor task7{
         #include "utils.h"
     =}
 
-    input in: void;
+    input in: arr_t;
     /*output num_processed: int;
     output num_missed: int;*/
 
@@ -24,7 +24,9 @@ reactor task7{
         processed_users++;
         elapsed_time = end_time;
 
-        wait(500);
+        arr_t user = *in.get();
+        int t4 = *(user[0]+4);
+        wait(t4);
     =}
 
     reaction(shutdown) {=

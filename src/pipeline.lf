@@ -23,6 +23,7 @@ main reactor {
 
     reaction(startup) {=
         std::cout << "init pipeline!\n";
+        srand ( time(NULL) );
     =}
 
     dispatch_generator = new dispatch_manager(

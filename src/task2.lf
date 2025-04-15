@@ -8,11 +8,13 @@ reactor task2 {
         #include "utils.h"
     =}
 
-    input in: void;
-    output out: void;
+    input in: arr_t;
+    output out: arr_t;
 
     reaction(in) -> out {=
-        wait(500);
-        out.set();
+        arr_t user = *in.get();
+        int t3 = *(user[0]+3);
+        wait(t3);
+        out.set(user);
     =}
 }
